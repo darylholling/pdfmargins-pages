@@ -42,28 +42,28 @@ class PDFController extends Controller
      */
     public function snipMargins(): void
     {
-        $fpdi = new Fpdi();
+        $pdf = new Fpdi();
 
-        $x = 'input';
-        $y = 'input' ?: $x;
+        $x = 'inputx';
+        $y = 'inputy' ?: $x;
 
         $labels = $this->get('kernel')->getProjectDir() . '/assets/images/labelsmetrand.pdf';
-        $pageCount = $fpdi->setSourceFile($labels);
+        $pageCount = $pdf->setSourceFile($labels);
 
         for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
-            $fpdi->AddPage('P', [self::WIDTH, self::HEIGHT]);
+            $pdf->AddPage('P', [self::WIDTH, self::HEIGHT]);
 
             if (isset($x)) {
-                $fpdi->useTemplate($fpdi->importPage($pageNo), $x, $y, self::WIDTH - (10 * 2), self::HEIGHT - (10 * 2));
+//                $pdf->useTemplate($pdf->importPage($pageNo), $x, $y, self::WIDTH - ($x * 2), self::HEIGHT - ($y * 2));
+                $pdf->useTemplate($pdf->importPage($pageNo), 10, 10, self::WIDTH - (10 * 2), self::HEIGHT - (10 * 2));
             } else {
-                $fpdi->useTemplate($fpdi->importPage($pageNo), 0, 0, self::WIDTH, self::HEIGHT);
+                $pdf->useTemplate($pdf->importPage($pageNo), 0, 0, self::WIDTH, self::HEIGHT);
 
             }
 
         }
 
-        $fpdi->Output();
-
+        $pdf->Output();
     }
 
 
@@ -77,15 +77,15 @@ class PDFController extends Controller
      */
     private function loop(int $position): void
     {
-        $fpdi = new Fpdi();
+        $pdf = new Fpdi();
 
         $labels = $this->get('kernel')->getProjectDir() . '/assets/images/labelsmetrand.pdf';
 
-        $pageCount = $fpdi->setSourceFile($labels);
+        $pageCount = $pdf->setSourceFile($labels);
         $sourcePages = [];
 
         for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
-            $sourcePages[] = $fpdi->importPage($pageNo);
+            $sourcePages[] = $pdf->importPage($pageNo);
         }
 
         $itemCountForPageOne = 5 - $position;
@@ -98,25 +98,25 @@ class PDFController extends Controller
 
         $start = $position;
 
-        $this->renderPage($fpdi, $start, $itemsForPageOne);
+        $this->renderPage($pdf, $start, $itemsForPageOne);
 
         foreach ($pages as $page) {
             $start = 1;
 
-            $this->renderPage($fpdi, $start, $page);
+            $this->renderPage($pdf, $start, $page);
         }
 
-        $fpdi->Output();
+        $pdf->Output();
     }
 
     /**
-     * @param $fpdi
+     * @param $pdf
      * @param $start
      * @param $labels
      */
-    private function renderPage($fpdi, &$start, $labels): void
+    private function renderPage($pdf, &$start, $labels): void
     {
-        $fpdi->AddPage();
+        $pdf->AddPage();
 
         foreach ($labels as $label) {
             $odd = $start % 2 !== 0;
@@ -124,7 +124,7 @@ class PDFController extends Controller
             $x = ($odd ? 0 : 1) * self::WIDTH;
             $y = ($start >= 3 ? 1 : 0) * self::HEIGHT;
 
-            $fpdi->useTemplate($label, $x, $y, self::WIDTH, self::HEIGHT);
+            $pdf->useTemplate($label, $x, $y, self::WIDTH, self::HEIGHT);
 
             $start++;
         }
